@@ -6,8 +6,11 @@ export const TodoContext = createContext({
             id: 1,
             todo: " Todo msg",
         }
+    
     ],
-    addTodo: (todo) => {}
+    addTodo: (todo) => {},
+    updateTodo: (id, todo) => {},
+    deleteTodo: (id) => {},
 })
 
 
