@@ -23,16 +23,16 @@ function App() {
   }
 
   const deleteTodo = (id) => {
-    setTodos((prev) => prev.filter((todo) => todo.id !== id))
-  }
+    axios.delete(`http://localhost:5000/api/todos/${id}`).then((todos) => {
+      console.log(todos.data)
+      setShouldRerender(!shouldRerender)
+    }).catch((err) => console.log(err))    }
 
   useEffect( () => {
     axios.get("http://localhost:5000/api/todos").then((todos) => {
       console.log(todos.data)
 
-      if (todos && todos.data.length > 0) {
         setTodos(todos.data)
-      }
     }).catch((err) => console.log(err))  
 
   }, [shouldRerender])
