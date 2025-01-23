@@ -4,35 +4,45 @@ import {TodoProvider} from './contexts'
 import './App.css'
 import TodoForm from './components/TodoForm'
 import TodoItem from './components/TodoItem'
+import axios from 'axios'
 
 function App() {
   const [todos, setTodos] = useState([])
+  const [shouldRerender , setShouldRerender] = useState(false)
 
   const addTodo = (todo) => {
-    setTodos((prev) => [{id: Date.now(), ...todo}, ...prev] )
+    // setTodos((prev) => [{id: Date.now(), ...todo}, ...prev] )
+    axios.post("http://localhost:5000/api/todos", {todo}).then((todos) => {
+      console.log(todos.data)
+      setShouldRerender(!shouldRerender)
+    }).catch((err) => console.log(err))  
   }
 
   const updateTodo = (id, todo) => {
     setTodos((prev) => prev.map((prevTodo) => (prevTodo.id === id ? todo : prevTodo )))
-
-    
   }
 
   const deleteTodo = (id) => {
     setTodos((prev) => prev.filter((todo) => todo.id !== id))
   }
 
-  useEffect(() => {
-    const todos = JSON.parse(localStorage.getItem("todos"))
+  useEffect( () => {
+    axios.get("http://localhost:5000/api/todos").then((todos) => {
+      console.log(todos.data)
 
-    if (todos && todos.length > 0) {
-      setTodos(todos)
-    }
-  }, [])
+      if (todos && todos.data.length > 0) {
+        setTodos(todos.data)
+      }
+    }).catch((err) => console.log(err))  
 
-  useEffect(() => {
-    localStorage.setItem("todos", JSON.stringify(todos))
-  }, [todos])
+  }, [shouldRerender])
+
+   
+
+
+  // useEffect(() => {
+  //   localStorage.setItem("todos", JSON.stringify(todos))
+  // }, [todos])
   
 
 
