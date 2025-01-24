@@ -18,9 +18,16 @@ function App() {
     }).catch((err) => console.log(err))  
   }
 
-  const updateTodo = (id, todo) => {
-    setTodos((prev) => prev.map((prevTodo) => (prevTodo.id === id ? todo : prevTodo )))
-  }
+  const updateTodo = (id, updatedTodo) => {
+    axios.put(`http://localhost:5000/api/todos/${id}`, updatedTodo)
+      .then((response) => {
+        const updatedTodos = todos.map((todo) =>
+          todo.id === id ? response.data : todo
+        );
+        setTodos(updatedTodos);
+      })
+      .catch((err) => console.error(err));
+  };
 
   const deleteTodo = (id) => {
     axios.delete(`http://localhost:5000/api/todos/${id}`).then((todos) => {
