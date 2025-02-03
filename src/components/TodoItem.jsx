@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useTodo } from '../contexts/TodoContext';
+import { toast } from 'react-toastify';
 
 function TodoItem({ todo }) {
   const [isTodoEditable, setIsTodoEditable] = useState(false)
@@ -7,6 +8,11 @@ function TodoItem({ todo }) {
   const {updateTodo, deleteTodo} = useTodo()
 
     const editTodo = () => {
+        const regex = /[^a-zA-Z\s]/;
+        if (regex.test(todoMsg)) {
+            toast.error("Only alphabets are allowed");
+            return;
+        }
     updateTodo(todo.id, {...todo, todo: todoMsg})
     setIsTodoEditable(false)
   }
@@ -25,7 +31,7 @@ function TodoItem({ todo }) {
                 onChange={(e) => setTodoMsg(e.target.value)}
                 readOnly={!isTodoEditable}
             />
-          {/* Edit, Save Button */}
+          
           
             <button
                 className="inline-flex w-8 h-8 rounded-lg text-sm border border-black/10 justify-center items-center bg-gray-50 hover:bg-gray-100 shrink-0 disabled:opacity-50"
