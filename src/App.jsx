@@ -16,6 +16,10 @@ function App() {
   const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
+    const [userID, setUserID] = useState(null);
+    const {keycloak, initialized} = useKeycloak();
+
+    const username = keycloak.idTokenParsed?.preferred_username;
     const limit = 6;
 
     const addTodo = (todo) => {
