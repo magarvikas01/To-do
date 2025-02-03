@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import './App.css'
 import TodoForm from './components/TodoForm'
 import TodoItem from './components/TodoItem'
+import { Header } from './components/Header'
 import pagination from './components/pagination'
 import axios from 'axios'
 import { ToastContainer } from 'react-toastify'
@@ -66,6 +67,7 @@ function App() {
     return (
     <TodoProvider value={{todos, addTodo, updateTodo, deleteTodo}}>
             <div className="bg-[#172842] min-h-screen py-8">
+                <Header />
                 <div className="w-full max-w-2xl mx-auto shadow-md rounded-lg px-4 py-3 text-white">
                     <h1 className="text-2xl font-bold text-center mb-8 mt-2">Manage Your Todos</h1>
                     <div className="mb-4">
