@@ -1,10 +1,13 @@
 
 import { useState, useEffect } from 'react'
 import {TodoProvider} from './contexts'
+import 'react-toastify/dist/ReactToastify.css'
 import './App.css'
 import TodoForm from './components/TodoForm'
 import TodoItem from './components/TodoItem'
+import pagination from './components/pagination'
 import axios from 'axios'
+import { ToastContainer } from 'react-toastify'
 
 function App() {
   const [todos, setTodos] = useState([])
@@ -39,6 +42,12 @@ function App() {
       console.log(todos.data)
       setShouldRerender(!shouldRerender)
     }).catch((err) => console.log(err))    }
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
+
+    
 
     useEffect(() => {
       axios.get(`http://localhost:5000/api/todos?page=${currentPage}&limit=${limit}`)
@@ -87,6 +96,11 @@ function App() {
                         >
                             Next
                         </button>
+                        <pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        handlePageChange={handlePageChange}
+                        />
                     </div>
                 </div>
             </div>
