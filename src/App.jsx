@@ -1,12 +1,13 @@
 
 import { useState, useEffect } from 'react'
+import { useKeycloak } from '@react-keycloak/web'
 import {TodoProvider} from './contexts'
 import 'react-toastify/dist/ReactToastify.css'
 import './App.css'
 import TodoForm from './components/TodoForm'
-import TodoItem from './components/TodoItem'
+import { TodoList } from './components/TodoList'
 import { Header } from './components/Header'
-import pagination from './components/pagination'
+import {Pagination} from './components/Pagination'
 import axios from 'axios'
 import { ToastContainer } from 'react-toastify'
 
@@ -22,92 +23,118 @@ function App() {
     const username = keycloak.idTokenParsed?.preferred_username;
     const limit = 6;
 
-    const addTodo = (todo) => {
-    // setTodos((prev) => [{id: Date.now(), ...todo}, ...prev] )
-    axios.post("http://localhost:5000/api/todos", {todo}).then((todos) => {
-      console.log(todos.data)
-      setShouldRerender(!shouldRerender)
-    }).catch((err) => console.log(err))  
-  }
+
+
+useEffect(() => {
+    if(initialized && keycloak.authenticated) {
+        const user = keycloak.tokenParsed;
+        if(user?.sub) {
+            setUserID(user.sub);
+        }
+    }
+}, [initialized, keycloak.authenticated, keycloak.tokenParsed]);
+
+
+    const getAuthHeader = async () => {
+        if (keycloak.authenticated) {
+          try{
+            await keycloak.updateToken(30);
+            return { Authorization: `Bearer ${keycloak.token}` }
+            }catch(err){
+              console.error('Token refresh failed:',err);
+              keycloak.logout();
+              return {};
+            }
+        }
+        return {};
+        }
+
+        useEffect(() => {
+            const fetchTodos = async () => {
+                if (initialized && keycloak.authenticated) {
+                    try{
+                        const headers = await getAuthHeader();
+                        const response = await 
+                        axios.get(`http://localhost:5000/api/todos?page=${currentPage}&limit=${limit}`,
+                        { headers , withCredentials: true }
+                        )
+                        setTodos(response.data.todos);
+                        setTotalCount(response.data.totalCount);
+                        setTotalPages(response.data.totalPages);
+                    }catch(err){
+                        if(err.response.status === 401){
+                            keycloak.logout();
+                        }
+                        console.error('Error fetching todos:', err);
+                    }
+                }
+            };
+            fetchTodos();
+
+          }, [initialized, keycloak, currentPage, shouldRerender]);
+      
+          
+          
+          const addTodo = (todo) => {
+              if(keycloak.authenticated) {
+                  getAuthHeader().then((headers) => {
+                  axios.post("http://localhost:5000/api/todos", {todo}, {headers})
+                     .then(() => setShouldRerender(!shouldRerender))
+                       .catch((err) => console.log(err))  
+                     });
+                  }
+             }
 
     const updateTodo = (id, updatedTodo) => {
-        axios.put(`http://localhost:5000/api/todos/${id}`, updatedTodo)
-            .then((response) => {
-                const updatedTodos = todos.map((todo) =>
-                    todo.id === id ? response.data : todo
-                );
-                setTodos(updatedTodos);
-                console.log(response.data);
+        if (keycloak.authenticated) {
+            getAuthHeader().then((headers) => {
+                axios.put(`http://localhost:5000/api/todos/${id}`, updatedTodo, { headers })
+                
+                .then((response) => {
+                    const updatedTodos = todos.map((todo) =>
+                        todo.id === id ? response.data : todo
+                    );         
+                    setTodos(updatedTodos);
+                       
+                    })
+                    .catch((err) => console.error(err));
             })
-            .catch((err) => console.error(err));
+        }        
     };
-
-    const deleteTodo = (id) => {
-    axios.delete(`http://localhost:5000/api/todos/${id}`).then((todos) => {
-      console.log(todos.data)
-      setShouldRerender(!shouldRerender)
-    }).catch((err) => console.log(err))    }
-
-    const handlePageChange = (pageNumber) => {
-        setCurrentPage(pageNumber);
-    };
-
     
-
-    useEffect(() => {
-      axios.get(`http://localhost:5000/api/todos?page=${currentPage}&limit=${limit}`)
-      .then((response) => {
-          setTodos(response.data.todos);
-          setTotalCount(response.data.totalCount);
-          setTotalPages(response.data.totalPages);
-      })
-      .catch((err) => console.log(err));
-    }, [shouldRerender, currentPage]);
-
+    const deleteTodo = (id) => {
+        if (keycloak.authenticated) {
+            getAuthHeader().then((headers) => {
+                axios.delete(`http://localhost:5000/api/todos/${id}`, {headers})
+                 .then(() => setShouldRerender(!shouldRerender))
+                .catch((err) => console.error(err));
+            });
+        }
+    };
+    
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
     };
-
+    
+    if (!initialized) return <div className='text-center py-10'>Loading....</div>
+    
     return (
     <TodoProvider value={{todos, addTodo, updateTodo, deleteTodo}}>
-            <div className="bg-[#172842] min-h-screen py-8">
-                <Header />
+        <ToastContainer />
+            <div className="bg-[#172842] min-h-screen">
+                <Header username={username} onLogout={() => keycloak.logout} />
                 <div className="w-full max-w-2xl mx-auto shadow-md rounded-lg px-4 py-3 text-white">
                     <h1 className="text-2xl font-bold text-center mb-8 mt-2">Manage Your Todos</h1>
                     <div className="mb-4">
                         <TodoForm />
                     </div>
-                    <div className="flex flex-wrap gap-y-3">
-                        {todos.map((todo) => (
-                          <div key={todo.id}
-                          className='w-full'
-                          >
-                                <TodoItem todo={todo} />
-                            </div>
-                        ))}
-                    </div>
-                    <div className="flex justify-center mt-4"> {/* Pagination */}
-                        <button
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                            className="px-3 py-1 rounded bg-gray-600 text-white mr-2"
-                        >
-                            Previous
-                        </button>
-                        <span>Page {currentPage} of {totalPages}</span>
-                        <button
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                            className="px-3 py-1 rounded bg-gray-600 text-white ml-2"
-                        >
-                            Next
-                        </button>
+                    <TodoList todos={todos} />  
+
                         <pagination
                         currentPage={currentPage}
                         totalPages={totalPages}
-                        handlePageChange={handlePageChange}
+                        onPageChange={handlePageChange}
                         />
-                    </div>
                 </div>
             </div>
         </TodoProvider>

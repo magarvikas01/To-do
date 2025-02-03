@@ -1,4 +1,4 @@
-export const Header = () => {
+export const Header = ({username, onLogout}) => {
     return (
       <header className="bg-[#ccbed7] shadow">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -6,7 +6,8 @@ export const Header = () => {
             My TodoApp
           </h1>
           {username && (
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4"> 
+            <span className="text-gray-700 hidden sm:block">Welocome, {username}</span>
               <button
                 onClick={onLogout}
                 className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
