@@ -8,12 +8,19 @@ function TodoItem({ todo }) {
   const {updateTodo, deleteTodo} = useTodo()
 
     const editTodo = () => {
+
+  const trimmedMsg = todoMsg.trim();
+        if (trimmedMsg.length < 2 || trimmedMsg.length > 50) {
+            toast.error("Todo should be between 2 and 50 characters");
+            return;
+        }
+
         const regex = /[^a-zA-Z\s]/;
-        if (regex.test(todoMsg)) {
+        if (regex.test(trimmedMsg)) {
             toast.error("Only alphabets are allowed");
             return;
         }
-    updateTodo(todo.id, {...todo, todo: todoMsg})
+    updateTodo(todo.id, {...todo, todo: trimmedMsg})
     setIsTodoEditable(false)
   }
   
@@ -30,6 +37,7 @@ function TodoItem({ todo }) {
                 value={todoMsg}
                 onChange={(e) => setTodoMsg(e.target.value)}
                 readOnly={!isTodoEditable}
+                maxLength={50}
             />
           
           

@@ -62,7 +62,7 @@ useEffect(() => {
                         setTotalCount(response.data.totalCount);
                         setTotalPages(response.data.totalPages);
                     }catch(err){
-                        if(err.response.status === 401){
+                        if(err.response?.status === 401){
                             keycloak.logout();
                         }
                         console.error('Error fetching todos:', err);
@@ -122,7 +122,7 @@ useEffect(() => {
     <TodoProvider value={{todos, addTodo, updateTodo, deleteTodo}}>
         <ToastContainer />
             <div className="bg-[#172842] min-h-screen">
-                <Header username={username} onLogout={() => keycloak.logout} />
+                <Header username={username} onLogout={() => keycloak.logout()} />
                 <div className="w-full max-w-2xl mx-auto shadow-md rounded-lg px-4 py-3 text-white">
                     <h1 className="text-2xl font-bold text-center mb-8 mt-2">Manage Your Todos</h1>
                     <div className="mb-4">
@@ -130,7 +130,7 @@ useEffect(() => {
                     </div>
                     <TodoList todos={todos} />  
 
-                        <pagination
+                        <Pagination
                         currentPage={currentPage}
                         totalPages={totalPages}
                         onPageChange={handlePageChange}
