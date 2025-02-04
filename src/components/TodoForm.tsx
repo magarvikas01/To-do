@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { useTodo } from '../contexts/TodoContext';
 
 function TodoForm() {
-    const [todo, setTodo] = useState("")
-    const [error, setError] = useState("");
+    const [todo, setTodo] = useState<string>("")
+    const [error, setError] = useState<string>("");
     const {addTodo} = useTodo()
-    const handleInputChange = (e) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>):void => {
         const value = e.target.value;
 
         // Allow only letters and spaces (no numbers or special characters)
@@ -17,7 +17,7 @@ function TodoForm() {
         }
     };
 
-    const add = (e) => {
+    const add = (e: React.FormEvent<HTMLFormElement>): void => {
       e.preventDefault()
 
       setError('');

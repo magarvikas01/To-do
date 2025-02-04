@@ -3,11 +3,11 @@ import { useTodo } from '../contexts/TodoContext';
 import { toast } from 'react-toastify';
 
 function TodoItem({ todo }) {
-  const [isTodoEditable, setIsTodoEditable] = useState(false)
-  const [todoMsg, setTodoMsg] = useState(todo.todo)
+  const [isTodoEditable, setIsTodoEditable] = useState<boolean>(false)
+  const [todoMsg, setTodoMsg] = useState<string>(todo.todo)
   const {updateTodo, deleteTodo} = useTodo()
 
-    const editTodo = () => {
+    const editTodo = ():void => {
 
   const trimmedMsg = todoMsg.trim();
         if (trimmedMsg.length < 2 || trimmedMsg.length > 50) {

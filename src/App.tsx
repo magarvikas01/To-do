@@ -1,7 +1,7 @@
-
+import React from 'react'
 import { useState, useEffect } from 'react'
 import { useKeycloak } from '@react-keycloak/web'
-import {TodoProvider} from './contexts'
+import {TodoProvider} from './contexts/TodoContext'
 import 'react-toastify/dist/ReactToastify.css'
 import './App.css'
 import TodoForm from './components/TodoForm'
@@ -11,13 +11,20 @@ import {Pagination} from './components/Pagination'
 import axios from 'axios'
 import { ToastContainer } from 'react-toastify'
 
+interface Todo {
+    id: string;
+    todo: string;
+    // completed: boolean;
+  }
+
 function App() {
-  const [todos, setTodos] = useState([])
-  const [shouldRerender , setShouldRerender] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalCount, setTotalCount] = useState(0);
-    const [userID, setUserID] = useState(null);
+
+  const [todos, setTodos] = useState<Todo[]>([])
+  const [shouldRerender , setShouldRerender] = useState<boolean>(false)
+  const [currentPage, setCurrentPage] = useState<number>(1);
+    const [totalPages, setTotalPages] = useState<number>(1);
+    const [totalCount, setTotalCount] = useState<number>(0);
+    const [userID, setUserID] = useState<string | null>(null);
     const {keycloak, initialized} = useKeycloak();
 
     const username = keycloak.idTokenParsed?.preferred_username;
@@ -35,7 +42,7 @@ useEffect(() => {
 }, [initialized, keycloak.authenticated, keycloak.tokenParsed]);
 
 
-    const getAuthHeader = async () => {
+    const getAuthHeader = async () : Promise<Record<string, string>> => {
         if (keycloak.authenticated) {
           try{
             await keycloak.updateToken(30);
@@ -50,7 +57,7 @@ useEffect(() => {
         }
 
         useEffect(() => {
-            const fetchTodos = async () => {
+            const fetchTodos = async (): Promise<void>  => {
                 if (initialized && keycloak.authenticated) {
                     try{
                         const headers = await getAuthHeader();
@@ -75,7 +82,7 @@ useEffect(() => {
       
           
           
-          const addTodo = (todo) => {
+          const addTodo = (todo: { text: string }): void => {
               if(keycloak.authenticated) {
                   getAuthHeader().then((headers) => {
                   axios.post("http://localhost:5000/api/todos", {todo}, {headers})
@@ -85,7 +92,7 @@ useEffect(() => {
                   }
              }
 
-    const updateTodo = (id, updatedTodo) => {
+    const updateTodo = (id:string, updatedTodo:Partial<Todo>): void  => {
         if (keycloak.authenticated) {
             getAuthHeader().then((headers) => {
                 axios.put(`http://localhost:5000/api/todos/${id}`, updatedTodo, { headers })
@@ -102,7 +109,7 @@ useEffect(() => {
         }        
     };
     
-    const deleteTodo = (id) => {
+    const deleteTodo = (id:string):void => {
         if (keycloak.authenticated) {
             getAuthHeader().then((headers) => {
                 axios.delete(`http://localhost:5000/api/todos/${id}`, {headers})
@@ -112,14 +119,14 @@ useEffect(() => {
         }
     };
     
-    const handlePageChange = (pageNumber) => {
+    const handlePageChange = (pageNumber:number):void => {
         setCurrentPage(pageNumber);
     };
     
     if (!initialized) return <div className='text-center py-10'>Loading....</div>
     
     return (
-    <TodoProvider value={{todos, addTodo, updateTodo, deleteTodo}}>
+    <TodoProvider value={{todos:[], addTodo, updateTodo, deleteTodo}}>
         <ToastContainer />
             <div className="bg-[#172842] min-h-screen">
                 <Header username={username} onLogout={() => keycloak.logout()} />
